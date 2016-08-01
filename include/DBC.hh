@@ -5,7 +5,7 @@
 #ifndef flcrum_DBC_HH
 #define flcrum_DBC_HH
 
-#include "GenException.hh"
+#include "Exception.hh"
 
 #include <iostream>
 #include <string>
@@ -42,15 +42,18 @@ namespace flcrum
 template <bool> struct StaticChecker {StaticChecker(...);};
 template <> struct StaticChecker<false> { };
 
-#ifdef DEBUG
+#ifndef NODBC
 
 // DBC Macros
-#define Assert(c) if (!(c)) throw flcrum::GenException( __LINE__, __FILE__,#c)
+#define Assert(c)                                                              \
+	if (!(c)) throw flcrum::Exception("Assertion error",__LINE__,__FILE__,#c);
 #define Require(c) Assert(c)
 #define Ensure(c)  Assert(c)
 
 // Verbose DBC Macros (i.e. with an additional message)
-#define Assertv(c, m) if (!(c)) throw flcrum::GenException( __LINE__, __FILE__, std::string(#c) +", " + std::string(m))
+#define Assertv(c, m)                                                          \
+	if (!(c)) throw flcrum::Exception("Assertion error", __LINE__, __FILE__,     \
+			                              std::string(#c) + ", " + std::string(m))
 #define Requirev(c, m) Assertv(c, m)
 #define Ensurev(c, m)  Assertv(c, m)
 
@@ -58,12 +61,12 @@ template <> struct StaticChecker<false> { };
 #define StaticAssert(c)                                                        \
 {                                                                              \
   class ERROR_Compile_time{};                                                  \
-  (void)sizeof flcrum::StaticChecker<(c)!=0>((ERROR_Compile_time()));\
+  (void)sizeof flcrum::StaticChecker<(c)!=0>((ERROR_Compile_time()));          \
 }
-#define StaticAssertv(c, m)                                             \
-{                                                                       \
-  class ERROR_##m{};                                                    \
-  (void)sizeof flcrum::StaticChecker<(c)!=0>((ERROR_##m()) ); \
+#define StaticAssertv(c, m)                                                    \
+{                                                                              \
+  class ERROR_##m{};                                                           \
+  (void)sizeof flcrum::StaticChecker<(c)!=0>((ERROR_##m()) );                  \
 }
 
 #else
@@ -79,7 +82,11 @@ template <> struct StaticChecker<false> { };
 
 #endif
 
-#define Insist(c,m) if (!(c)) {std::cerr << m << std::endl; throw flcrum::GenException( __LINE__, __FILE__, #c);}
+#define Insist(c,m) if (!(c))                       \
+{                                                   \
+  std::cerr << m << std::endl;                      \
+  throw flcrum::Exception("Assertion error", __LINE__, __FILE__, #c); \
+}
 
 template <class T>
 inline std::string as_string(T v)

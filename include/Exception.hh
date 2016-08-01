@@ -33,17 +33,21 @@ public:
    * @param file 		file in which error occurs
    * @param message 	the message
    */
-  Exception(int line, std::string file, std::string message)
+  Exception(std::string what, int line, std::string file, std::string message)
   {
-	std::stringstream line_s << i;
-    d_message = prepend + "\n"
-	          + "           on line: " + line_s.str() + "\n"
-	          + "           in file: " + file + "\n"
-	          + "           message: " + message;
+  	std::stringstream s;
+  	s << what << "\n"
+  		<< "           on line: " << line << "\n"
+			<< "           in file: " << file << "\n"
+			<< "           message: " << message;
+    d_message = s.str();
   }
 
   /// Destructor
-  virtual ~Exception() throw ();
+  virtual ~Exception() throw ()
+  {
+    /* ... */
+  }
 
   /// Returns the error message associated with this Exception.
   virtual const char* what() const throw ()
